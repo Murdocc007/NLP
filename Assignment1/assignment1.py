@@ -181,10 +181,11 @@ def distinctCountBigram(Bigrams):
     for obj in Bigrams:
         if obj.getCount() not in map:
             map.append(obj.getCount())
+    map.sort()
     print map
 
 if __name__ == "__main__":
-    filePath='/home/aditya/Desktop/Aditya/NLP/Assignment 1/NLPCorpusTreebank2Parts-CorpusA-Unix.txt'
+    filePath='./NLPCorpusTreebank2Parts-CorpusA-Unix.txt'
     tokens=tokenizer(filePath)
     unigrams=generateUnigrams(tokens)
     bigrams=generateBigrams(tokens)
