@@ -2,6 +2,8 @@ from __future__ import division
 import re
 
 class BiGram:
+
+    zeroCountSmoothProb=0 #static variable to store the good turing probability of the bigrams with
     def __init__(self,words):
         self.words=words
         self.count=0
@@ -21,7 +23,7 @@ class BiGram:
     def getUnsmoothProb(self):
         return self.prob
 
-    def getSmoothProbabilty(self):
+    def getSmoothProb(self):
         return self.smoothProb
 
     def setUnsmoothProb(self,val):
@@ -56,7 +58,7 @@ class UniGram:
     def getUnsmoothProb(self):
         return self.prob
 
-    def getSmoothProbabilty(self):
+    def getSmoothProb(self):
         return self.smoothProb
 
     def setUnsmoothProb(self,val):
@@ -117,17 +119,15 @@ def generateBigrams(tokens):
     bigrams.sort(key=lambda k:k.getWords())
     return bigrams
 
+#set the good turing probabilities of the bigrams
 def setGoodTuringBigramProbability(bigrams,unigrams):
-
     #countmap stores the number of bigrams which occur with a given number of occcurences
     countMap=dict()
-
     for bigram in bigrams:
         if bigram.getCount() in countMap:
             countMap[bigram.getCount()]+=1
         else:
             countMap[bigram.getCount()]=1
-
     for c in countMap:
         prob=0
         Nc=countMap[c]
@@ -139,13 +139,13 @@ def setGoodTuringBigramProbability(bigrams,unigrams):
         else:
             temp=((c+1)*(Nc1))/Nc
             prob=temp/len(unigrams)
-
         #need to optimize this inner loop
         #setting the smooth probabilities
         #of all bigrams with the given count
         for item in bigrams:
             if(item.getCount()==c):
                 item.setSmoothProb(prob)
+    BiGram.zeroCountSmoothProb=countMap[1]/len(bigrams) #N1/N,probability of count=0 bigrams
 
 #finds a unigram with the given word
 def findUnigram(unigrams,word):
@@ -173,7 +173,7 @@ def setAddOneBigramProbability(bigrams,unigrams):
         #get the first word in bigram
         firstword=bigram.getWords()[0]
         unigram=findUnigram(unigrams,firstword)
-        prob=(count+1)/(unigram.getCount()+len(unigrams))
+        prob=(count+1)/(unigram.getCount()+len(unigrams))#(C(Wn,Wn-1)+1)/(C(Wn-1)+V)
         bigram.setAddOneProb(prob)
 
 def distinctCountBigram(Bigrams):
@@ -184,16 +184,64 @@ def distinctCountBigram(Bigrams):
     map.sort()
     print map
 
+#return the count of a particular unigram
+def getUnigramsCount(Unigrams,word):
+    for unigram in Unigrams:
+        if(unigram.getWord()==word):
+            return unigram.getCount()
+    return -1
+
+#calculates the probability of the sentence
+#takes 3 arguments, the Sentence,Bigrams and
+# the type; which can be of 3
+# types; unsmooth, goodturing and addone
+def calculateSentenceProbability(Sentence,Bigrams,Unigrams,type='unsmooth'):
+    Sentence=re.findall(r'(?ms)\W*(\w+)', Sentence) #tokenize the sentence
+    bigramtokens=zip(*[Sentence[i:] for i in range(2)])
+    prob=1
+    if(type=='usmooth'):
+        for token in bigramtokens:
+            found=-1
+            for temp in Bigrams:
+                if(temp.getWords()==token):
+                    print temp.getWords()
+                    prob=prob*temp.getUnsmoothProb()
+                    found=1
+            if(found==-1): #if the token doesn't exist in the bigrams then return 0 as the probability
+                prob=0
+                break
+    elif(type=='addone'):
+        for token in bigramtokens:
+            found=-1
+            for temp in Bigrams:
+                if(temp.getWords()==token):
+                    prob=prob*temp.getAddOneProb()
+                    found=1
+            if(found==-1): # if the token is not in the bigrams, then multiply it with 1/(C(Wn-1)+V)
+                prob=prob*(1/(getUnigramsCount(Unigrams,token[0])+len(Unigrams)))
+    else:
+        for token in bigramtokens:
+            found=-1
+            for temp in Bigrams:
+                if(temp.getWords()==token):
+                    prob=prob*temp.getSmoothProb()
+                    found=1
+            if(found==-1):
+                prob=prob*BiGram.zeroCountSmoothProb
+    return prob
+
 if __name__ == "__main__":
     filePath='./NLPCorpusTreebank2Parts-CorpusA-Unix.txt'
     tokens=tokenizer(filePath)
     unigrams=generateUnigrams(tokens)
     bigrams=generateBigrams(tokens)
-    distinctCountBigram(bigrams)
     setUnsmoothBigramProbability(bigrams,unigrams)
     setAddOneBigramProbability(bigrams,unigrams)
     setGoodTuringBigramProbability(bigrams,unigrams)
-    print 'haha'
+    s1="The president has relinquished his control of the company's board."
+    s2="The chief executive officer said the last year revenue was good."
+    print calculateSentenceProbability(s1,bigrams,unigrams,type='addone')
+    print calculateSentenceProbability(s2,bigrams,unigrams,type='addone')
 
 
 
