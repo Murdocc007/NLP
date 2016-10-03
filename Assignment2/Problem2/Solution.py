@@ -43,10 +43,12 @@ def findTags(wordCount,tagWordCount):
 def topNErrorWords(fileName,wordTag,N):
     file=open(fileName,'r')
     totalError=0
+    totalWords=0
     error={}
     for line in file:
         words=line.split()
         for text in words:
+            totalWords+=1
             word,tag=text.split('_')
             if tag!=wordTag[word]:
                if word in error:
@@ -55,23 +57,25 @@ def topNErrorWords(fileName,wordTag,N):
                    error[word]=1
     for word,val in error.items():
         totalError+=val
-    print "Total number of corrected words: "+str(totalError)
+    print "Error: "+str(totalError/totalWords)
     res=sorted(error.items(),key=lambda x:x[1],reverse=True)
     return [x[0] for x in res[:N]]
 
 #the top 5 erroneous tag words are "have","more","plans","that","'s"
 #function applies 5 rules to the corresponding 5 most erroneous words
-# and finds the corresponding error
+# and finds the corresponding total error
 #return a list of words which contains the top 5 erroneous words
 def topNErrorWordsCorrected(fileName,wordTag,N):
     file=open(fileName,'r')
     totalError=0
+    totalWords=0
     errorWords=["that","more","have","'s","plans"]
     error={}
     prevTag=''
     for line in file:
         words=line.split()
         for text in words:
+            totalWords+=1
             word,tag=text.split('_')
             if tag!=wordTag[word]:
                 if word in errorWords:
@@ -92,7 +96,7 @@ def topNErrorWordsCorrected(fileName,wordTag,N):
             prevTag=tag
     for word,val in error.items():
         totalError+=val
-    print "Total number of erroneous tagged words after correction: "+str(totalError)
+    print "Total number of erroneous tagged words after correction: "+str(totalError/totalWords)
     res=sorted(error.items(),key=lambda x:x[1],reverse=True)
     return [x[0] for x in res[:N]]
 
