@@ -36,8 +36,6 @@ def constructHMM(o):
                     backtrack[t][j]=i #argmax
                 v[t][j]=max(v[t-1][i]*a[i][j]*b[j][o[t]],v[t][j])
 
-    for i in range(1,states+1):
-        best_score=max(best_score,v[T][i]*a[i][o[T]])
 
 
 
