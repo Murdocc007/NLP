@@ -1,3 +1,4 @@
+#author: Aditya Mahajan (AXM156630)
 from __future__ import division
 import re
 
@@ -74,11 +75,14 @@ class UniGram:
         return self.addOneProb
 
 #returns a list of tokens
-def tokenizer(fileName):
-    file=open(fileName,'r+')
-    txt=file.read()
-    file.close()
-    return re.findall(r'(?ms)\W*(\w+)', txt)  # split words
+def tokenizer(fileName,isFile=True):
+    if(isFile==True):
+        file=open(fileName,'r+')
+        txt=file.read()
+        file.close()
+        return re.findall(r'(?ms)\W*(\w+)', txt)  # split words
+    else:
+        return re.findall(r'(?ms)\W*(\w+)', fileName)
 
 #return a list of unigrams
 def generateUnigrams(tokens):
@@ -87,6 +91,7 @@ def generateUnigrams(tokens):
     #a list of the unigrams object
     unigrams=[]
     count=0
+    flag=-1
     for idx,token in enumerate(tokens):
         if(token!=prev and idx!=0):
             temp=UniGram(prev)
@@ -96,13 +101,17 @@ def generateUnigrams(tokens):
         else:
             count+=1
         prev=token
-
+    #setting the last unigram
+    temp=UniGram(prev)
+    temp.setCount(count)
+    unigrams.append(temp)
     unigrams.sort(key=lambda k:k.getWord())
     return unigrams
 
 #return a list of bigrams
 def generateBigrams(tokens):
     bigramtokens=zip(*[tokens[i:] for i in range(2)])
+    bigramtokens.sort()
     #a list of bigram objects
     bigrams=[]
     prev=None
@@ -116,6 +125,9 @@ def generateBigrams(tokens):
         else:
             count+=1
         prev=token
+    temp=BiGram(prev)
+    temp.setCount(count)
+    bigrams.append(temp)
     bigrams.sort(key=lambda k:k.getWords())
     return bigrams
 
@@ -162,6 +174,8 @@ def setUnsmoothBigramProbability(bigrams,unigrams):
         #get the first word in bigram
         firstword=bigram.getWords()[0]
         unigram=findUnigram(unigrams,firstword)
+        if(unigram==-1):
+            print firstword
         prob=count/(unigram.getCount())
         bigram.setUnsmoothProb(prob)
 
@@ -199,17 +213,16 @@ def calculateSentenceProbability(Sentence,Bigrams,Unigrams,type='unsmooth'):
     Sentence=re.findall(r'(?ms)\W*(\w+)', Sentence) #tokenize the sentence
     bigramtokens=zip(*[Sentence[i:] for i in range(2)])
     prob=1
-    if(type=='usmooth'):
+    if(type=='unsmooth'):
         for token in bigramtokens:
             found=-1
             for temp in Bigrams:
                 if(temp.getWords()==token):
-                    print temp.getWords()
                     prob=prob*temp.getUnsmoothProb()
                     found=1
             if(found==-1): #if the token doesn't exist in the bigrams then return 0 as the probability
-                prob=0
-                break
+                prob=0.0
+                # break
     elif(type=='addone'):
         for token in bigramtokens:
             found=-1
@@ -230,18 +243,118 @@ def calculateSentenceProbability(Sentence,Bigrams,Unigrams,type='unsmooth'):
                 prob=prob*BiGram.zeroCountSmoothProb
     return prob
 
+#print the bigrams count table in to the given file
+def printBigramTable(bigrams,tokens,filename):
+    file=open(filename,'w')
+    #get the maximum length of the tokens for the maximum padding
+    maxlen=0
+    for token in tokens:
+        if(len(token)>maxlen):
+            maxlen=len(token)
+    n=len(tokens)
+    #make a matrix of size n+1xn+1
+    matrix=[[0 for i in range(n+1)] for j in range(n+1)]
+
+    for i in range(n):
+        matrix[0][i+1]=tokens[i]
+    for i in range(n):
+        matrix[i+1][0]=tokens[i]
+    for i in range(1,n+1):
+        for j in range(1,n+1):
+            for bigram in bigrams:
+                if(bigram.getWords()[0]==tokens[i-1] and bigram.getWords()[1]==tokens[j-1]):
+                    matrix[i][j]=bigram.getCount()
+    #print the matrix
+    for i in range(n+1):
+        for j in range(n+1):
+            file.write(str(matrix[i][j])+' '*(maxlen-len(str(matrix[i][j]))+1))
+        file.write('\n')
+
+#print the bigram probability table into the given file
+def printBigramProbabilities(bigrams,tokens,filename,type='unsmooth'):
+    file=open(filename,'w')
+    #get the maximum length of the tokens for the maximum padding
+    maxlen=0
+    for token in tokens:
+        maxlen=max(maxlen,len(token))
+    n=len(tokens)
+    #make a matrix of size n+1xn+1
+    matrix=[[0.0 for i in range(n+1)] for j in range(n+1)]
+
+    for i in range(n):
+        matrix[0][i+1]=tokens[i]
+    for i in range(n):
+        matrix[i+1][0]=tokens[i]
+    for i in range(1,n+1):
+        for j in range(1,n+1):
+            for bigram in bigrams:
+                if(bigram.getWords()[0]==tokens[i-1] and bigram.getWords()[1]==tokens[j-1]):
+                    if type=='unsmooth':
+                        matrix[i][j]=bigram.getUnsmoothProb()
+                    elif type=='addone':
+                        matrix[i][j]=bigram.getAddOneProb()
+                    else:
+                        matrix[i][j]=bigram.getSmoothProb()
+                    maxlen=max(maxlen,len(str(matrix[i][j])))
+    #print the matrix
+    for i in range(n+1):
+        for j in range(n+1):
+            file.write(str(matrix[i][j])+' '*(maxlen-len(str(matrix[i][j]))+1))
+        file.write('\n')
+
 if __name__ == "__main__":
     filePath='./NLPCorpusTreebank2Parts-CorpusA-Unix.txt'
     tokens=tokenizer(filePath)
-    unigrams=generateUnigrams(tokens)
     bigrams=generateBigrams(tokens)
+    unigrams=generateUnigrams(tokens)
+
+
     setUnsmoothBigramProbability(bigrams,unigrams)
     setAddOneBigramProbability(bigrams,unigrams)
     setGoodTuringBigramProbability(bigrams,unigrams)
+
     s1="The president has relinquished his control of the company's board."
     s2="The chief executive officer said the last year revenue was good."
+
+    print 'First sentence is "'+s1+'"'
+    print 'Second sentence is "'+s2+'"'
+
+    tokens1=tokenizer(s1,isFile=False)
+    bigrams1=generateBigrams(tokens1)
+
+    tokens2=tokenizer(s2,isFile=False)
+    bigrams2=generateBigrams(tokens2)
+
+
+    printBigramTable(bigrams1,tokens1,'./countTable1.txt')
+    printBigramTable(bigrams2,tokens2,'./countTable2.txt')
+
+    printBigramProbabilities(bigrams,tokens1,'./unsmooth1.txt')
+    printBigramProbabilities(bigrams,tokens2,'./unsmooth2.txt')
+
+    printBigramProbabilities(bigrams,tokens1,'./addOne1.txt',type='addone')
+    printBigramProbabilities(bigrams,tokens2,'./addOne2.txt',type='addone')
+
+    printBigramProbabilities(bigrams,tokens1,'./goodTuring1.txt',type='goodturing')
+    printBigramProbabilities(bigrams,tokens2,'./goodTuring2.txt',type='goodturing')
+
+    print 'Unsmooth probability'
+    print 'Sentence 1: ',
+    print calculateSentenceProbability(s1,bigrams,unigrams)
+    print 'Sentence 2: ',
+    print calculateSentenceProbability(s2,bigrams,unigrams)
+
+    print 'Addone probability'
+    print 'Sentence 1: ',
     print calculateSentenceProbability(s1,bigrams,unigrams,type='addone')
+    print 'Sentence 2: ',
     print calculateSentenceProbability(s2,bigrams,unigrams,type='addone')
+
+    print 'GoodTuring probability'
+    print 'Sentence 1: ',
+    print calculateSentenceProbability(s1,bigrams,unigrams,type='goodturing')
+    print 'Sentence 2: ',
+    print calculateSentenceProbability(s2,bigrams,unigrams,type='goodturing')
 
 
 

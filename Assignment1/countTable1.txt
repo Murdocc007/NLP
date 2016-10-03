@@ -1,0 +1,12 @@
+0            The          president    has          relinquished his          control      of           the          company      s            board        
+The          0            1            0            0            0            0            0            0            0            0            0            
+president    0            0            1            0            0            0            0            0            0            0            0            
+has          0            0            0            1            0            0            0            0            0            0            0            
+relinquished 0            0            0            0            1            0            0            0            0            0            0            
+his          0            0            0            0            0            1            0            0            0            0            0            
+control      0            0            0            0            0            0            1            0            0            0            0            
+of           0            0            0            0            0            0            0            1            0            0            0            
+the          0            0            0            0            0            0            0            0            1            0            0            
+company      0            0            0            0            0            0            0            0            0            1            0            
+s            0            0            0            0            0            0            0            0            0            0            1            
+board        0            0            0            0            0            0            0            0            0            0            0            
