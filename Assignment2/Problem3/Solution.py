@@ -6,6 +6,7 @@ def constructHMM(o):
     T=len(o)
     best_score=0
     backtrace_start=None
+    path=[]
     states=2    #Hot-1,Cold-2,Start-0
     a = [[0 for x in range(states+1)] for x in range(states+1)]
     a[0][0] = 0
@@ -40,7 +41,6 @@ def constructHMM(o):
                 if(v[t-1][i]*a[i][j]*b[j][o[t]]>v[t][j]):
                     backtrack[t][j]=i #argmax
                 v[t][j]=max(v[t-1][i]*a[i][j]*b[j][o[t]],v[t][j])
-                print v[t][j]
 
 
     for i in range(1,states+1):
@@ -48,13 +48,16 @@ def constructHMM(o):
             best_score=v[T-1][i]
             backtrace_start=i
 
-    return best_score,backtrace_start
-
+    print best_score
+    for i in range(T-2,0,-1):
+        path.append('Hot' if backtrace_start==1 else 'Cold')
+        backtrace_start=backtrack[i][backtrace_start]
+    print path[::-1]
 
 if __name__=='__main__':
-    o=map(int,raw_input().split())
+    o=map(int,list(raw_input()))
     o=[0]+o
-    print constructHMM(o)
+    constructHMM(o)
 
 
 
