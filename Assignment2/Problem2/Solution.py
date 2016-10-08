@@ -101,10 +101,24 @@ def topNErrorWordsCorrected(fileName,wordTag,N):
     return [x[0] for x in res[:N]]
 
 
+def writeNewTaggedFile(oldFileName,newFileName,wordTag):
+    oldFile=open(oldFileName,'r')
+    newFile=open(newFileName,'w')
+    for line in oldFile:
+        words=line.split()
+        for text in words:
+            word,tag=text.split('_')
+            newFile.write(word+'_'+wordTag[word]+' ')
+    oldFile.close()
+    newFile.close()
+
+
+
 if __name__=='__main__':
     fileName='./trainingdata.txt'
     wordCount,tagWordCount=count(fileName)
     wordTag=findTags(wordCount,tagWordCount)
+    writeNewTaggedFile(fileName,'./newtaggeddata.txt',wordTag)
     top5ErrorWords=topNErrorWords(fileName,wordTag,5)
     print top5ErrorWords
     print topNErrorWordsCorrected(fileName,wordTag,5)
