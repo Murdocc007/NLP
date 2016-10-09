@@ -57,7 +57,7 @@ def topNErrorWords(fileName,wordTag,N):
                    error[word]=1
     for word,val in error.items():
         totalError+=val
-    print "Error: "+str(totalError/totalWords)
+    print "Error before applying rules: "+str((totalError/totalWords)*100)+'%'
     res=sorted(error.items(),key=lambda x:x[1],reverse=True)
     return [x[0] for x in res[:N]]
 
@@ -96,7 +96,8 @@ def topNErrorWordsCorrected(fileName,wordTag,N):
             prevTag=tag
     for word,val in error.items():
         totalError+=val
-    print "Total number of erroneous tagged words after correction: "+str(totalError/totalWords)
+    print "Error after applying rules: "+str((totalError/totalWords)*100)+'%'
+    print 'Error words after applying rules: ',
     res=sorted(error.items(),key=lambda x:x[1],reverse=True)
     return [x[0] for x in res[:N]]
 
@@ -120,6 +121,7 @@ if __name__=='__main__':
     wordTag=findTags(wordCount,tagWordCount)
     writeNewTaggedFile(fileName,'./newtaggeddata.txt',wordTag)
     top5ErrorWords=topNErrorWords(fileName,wordTag,5)
+    print 'Error words: ',
     print top5ErrorWords
     print topNErrorWordsCorrected(fileName,wordTag,5)
 
