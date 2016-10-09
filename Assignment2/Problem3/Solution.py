@@ -49,7 +49,7 @@ def constructHMM(o):
             backtrace_start=i
 
     print best_score
-    for i in range(T-2,0,-1):
+    for i in range(T-1,0,-1):
         path.append('Hot' if backtrace_start==1 else 'Cold')
         backtrace_start=backtrack[i][backtrace_start]
     print path[::-1]
