@@ -24,7 +24,7 @@ def simplifiedLesk( word, sentence ):
     return best_sense
 
 
-sentence='The bank can guarantee deposits will eventually cover future tuition costs because it invests in adjustable-rate mortgage securities'
+sentence = 'The bank can guarantee deposits will eventually cover future tuition costs because it invests in adjustable-rate mortgage securities'
 word = raw_input("Enter the word :")
 
 res = simplifiedLesk(word,sentence)
