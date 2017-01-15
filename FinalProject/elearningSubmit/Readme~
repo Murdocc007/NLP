@@ -1,0 +1,6 @@
+main.py code contains the baseline and all individual features and Allfeats.py makes a model considering all the features combined.
+To run the main.py or Allfeats.py code. 
+open terminal, go to the folder where it is located
+run the commands
+python <codename>.py
+

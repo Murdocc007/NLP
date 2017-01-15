@@ -1,0 +1,49 @@
+Smiley detection using sentiment analysis.
+The problem is to detect what smiley, a happy one or a sad one,  a person will use at the end of writing a sentence. Will be using Python's NLTK library to
+detect the sentiment and based on that, we'll output that smiley. For eg. "I am very happy today" simey will be ":D". Here the sentiment is happiness,
+therefore a happy smiley will be at the end of the sentence.
+
+Proposed solution:
+
+A naive base classifier will be used to detected the sentiment for the given features. 
+Baseline solution will be to just give the terms as features. so for example "I am very happy today", terms ["i", "am", "very", "happy", "today"] will be the
+features for the baseline solution. 
+
+Improvement strategy would be use other lexical, syntactic and semantic features as the features in the naive bayes classifier.
+
+Lexical Features:
+	Lemmas, n-grams.
+
+	For example:
+		"I am very happy today" 
+		Lemma: ["i", "be", "very", "happy", "today"]
+		Tool: nltk-wordnet-lemmatizer
+
+		bi-grams : ["i-am", "am-very", "very-happy", "happy-today"]
+
+Synticical Fetures:
+	POS tagging, Dependency Parser
+	
+	For examples:
+		"I am very happy today"
+		POS tagging: ["I|PRP", "am|VBP", "very|RB", "happy|JJ" , "today|NN"]
+		Tool: nltk-pos-tagging
+		
+		Dependency parser:
+		["happy - advmod - very", "happy - cop - am", "happy - nsubj - i", "happy - tmod- today" ]
+		Tool: Stanford Dependency Parser
+
+Semantic Features:
+	Hypernyms, Synonyms
+	
+	Add hypernyms and synonyms using wordnet for all terms in the sentence. 
+
+
+Programming tools:
+	Primary language: Python
+	Tool: Nltk
+	Corpus: Umich Kaggle dataset
+	
+Diagram:
+
+	Corpus--> Feature Extraction-->Apply naive bayes --->Output the corresponding smiley
